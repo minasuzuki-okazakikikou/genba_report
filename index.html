@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>現場管理 日報入力</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    background: #f5f5f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 1.5rem 1rem 3rem;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem 1.25rem;
+    max-width: 520px;
+    margin: 0 auto;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  h1 { font-size: 19px; font-weight: 600; margin-bottom: 3px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .sec {
+    font-size: 11px; font-weight: 600; letter-spacing: .07em;
+    color: #aaa; text-transform: uppercase;
+    margin: 1.25rem 0 8px;
+  }
+  .field { margin-bottom: 12px; }
+  label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 11px; font-size: 15px;
+    border: 1px solid #ddd; border-radius: 8px;
+    background: #fff; color: #1a1a1a;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #4a7fe0;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .jikan-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
+  .jikan-sep { font-size: 20px; color: #bbb; text-align: center; padding-bottom: 9px; }
+  .staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 7px; margin-top: 4px;
+  }
+  .chip {
+    padding: 6px 4px; font-size: 13px;
+    border: 1px solid #ddd; border-radius: 99px;
+    cursor: pointer; background: #fff; color: #666;
+    text-align: center; user-select: none;
+    transition: all .12s;
+  }
+  .chip.on {
+    background: #e8f0fe; color: #1a56c4;
+    border-color: #a0bcf0; font-weight: 600;
+  }
+  .hr { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
+  .preview-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; color: #aaa; text-transform: uppercase; margin-bottom: 8px; }
+  .preview {
+    background: #f7f7f5; border: 1px solid #e8e8e8;
+    border-radius: 10px; padding: 13px 14px;
+    font-size: 14px; color: #1a1a1a;
+    white-space: pre-wrap; line-height: 1.8;
+    min-height: 96px;
+  }
+  .btn-copy {
+    margin-top: 12px; width: 100%; padding: 13px;
+    background: #fff; border: 1px solid #ddd;
+    border-radius: 10px; font-size: 15px; font-weight: 600;
+    color: #1a1a1a; cursor: pointer;
+    transition: background .12s;
+  }
+  .btn-copy:hover { background: #f5f5f0; }
+  .btn-copy:active { transform: scale(0.98); }
+  .btn-copy.ok { color: #1a9c5b; border-color: #7dd4aa; background: #f0faf5; }
+  .btn-reset {
+    margin-top: 8px; width: 100%; padding: 10px;
+    background: transparent; border: none;
+    font-size: 13px; color: #aaa; cursor: pointer;
+  }
+  .btn-reset:hover { color: #888; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>現場管理 日報入力</h1>
+  <p class="sub">入力してLINEにコピーできます</p>
+
+  <div class="sec">基本情報</div>
+
+  <div class="row2">
+    <div class="field">
+      <label>工事日</label>
+      <input type="date" id="kojitsu" />
+    </div>
+    <div class="field">
+      <label>現場名</label>
+      <input type="text" id="genba" placeholder="現場名を入力" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label>工事内容</label>
+    <input type="text" id="kojinaiyo" placeholder="例：室外機入替" />
+  </div>
+
+  <div class="field">
+    <label>作業時間</label>
+    <div class="jikan-row">
+      <div>
+        <label style="font-size:12px;margin-bottom:3px">開始</label>
+        <input type="time" id="start" value="08:00" />
+      </div>
+      <div class="jikan-sep">→</div>
+      <div>
+        <label style="font-size:12px;margin-bottom:3px">終了</label>
+        <input type="time" id="end" value="17:00" />
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>休憩</label>
+    <select id="kyukei">
+      <option value="0">なし</option>
+      <option value="0.5">0.5h</option>
+      <option value="1" selected>1h</option>
+      <option value="1.5">1.5h</option>
+      <option value="2">2h</option>
+    </select>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>クレーン屋</label>
+      <select id="crane">
+        <option value="">なし</option>
+        <option>エビネクレーン</option>
+        <option>多摩川機工</option>
+        <option>勝沢重機</option>
+        <option>スギコー</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>ガードマン</label>
+      <input type="text" id="guard" placeholder="会社名（任意）" />
+    </div>
+  </div>
+
+  <div class="sec">出面（自社スタッフ）</div>
+  <div class="staff-grid" id="jisha-grid">
+    <div class="chip" data-v="青柳">青柳</div>
+    <div class="chip" data-v="今井">今井</div>
+    <div class="chip" data-v="本間">本間</div>
+    <div class="chip" data-v="大島">大島</div>
+    <div class="chip" data-v="大塚">大塚</div>
+    <div class="chip" data-v="福留">福留</div>
+    <div class="chip" data-v="金田">金田</div>
+    <div class="chip" data-v="ムル">ムル</div>
+    <div class="chip" data-v="アリエフ">アリエフ</div>
+    <div class="chip" data-v="キー">キー</div>
+    <div class="chip" data-v="フィー">フィー</div>
+    <div class="chip" data-v="サン">サン</div>
+    <div class="chip" data-v="岩田">岩田</div>
+  </div>
+
+  <div class="sec" style="margin-top:1rem">出面（自社以外）</div>
+  <div class="staff-grid" id="gaisha-grid">
+    <div class="chip" data-v="原西A">原西A</div>
+    <div class="chip" data-v="原西B">原西B</div>
+    <div class="chip" data-v="西陽機工A">西陽機工A</div>
+    <div class="chip" data-v="西陽機工B">西陽機工B</div>
+    <div class="chip" data-v="西陽機工C">西陽機工C</div>
+    <div class="chip" data-v="立川">立川</div>
+    <div class="chip" data-v="蒼機工A">蒼機工A</div>
+    <div class="chip" data-v="蒼機工B">蒼機工B</div>
+    <div class="chip" data-v="上坊">上坊</div>
+    <div class="chip" data-v="西田A">西田A</div>
+    <div class="chip" data-v="西田B">西田B</div>
+    <div class="chip" data-v="東和">東和</div>
+    <div class="chip" data-v="杉本機工">杉本機工</div>
+    <div class="chip" data-v="ワーキング">ワーキング</div>
+    <div class="chip" data-v="川越重量">川越重量</div>
+    <div class="chip" data-v="ash">ash</div>
+    <div class="chip" data-v="西岡">西岡</div>
+    <div class="chip" data-v="篠崎">篠崎</div>
+    <div class="chip" data-v="フジ興業">フジ興業</div>
+    <div class="chip" data-v="梓総業">梓総業</div>
+    <div class="chip" data-v="アローズコア">アローズコア</div>
+  </div>
+
+  <div class="field" style="margin-top:12px">
+    <label>備考・連絡事項</label>
+    <textarea id="biko" placeholder="特記事項があれば入力..."></textarea>
+  </div>
+
+  <hr class="hr" />
+  <div class="preview-label">LINEに貼り付ける内容</div>
+  <div class="preview" id="preview"></div>
+  <button class="btn-copy" id="copybtn" onclick="doCopy()">コピーする</button>
+  <button class="btn-reset" onclick="doReset()">リセット</button>
+</div>
+
+<script>
+const today = new Date();
+document.getElementById('kojitsu').value = today.toISOString().split('T')[0];
+
+let jisha = [], gaisha = [];
+
+document.querySelectorAll('#jisha-grid .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    c.classList.toggle('on');
+    const v = c.dataset.v;
+    jisha = jisha.includes(v) ? jisha.filter(x => x !== v) : [...jisha, v];
+    upd();
+  });
+});
+document.querySelectorAll('#gaisha-grid .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    c.classList.toggle('on');
+    const v = c.dataset.v;
+    gaisha = gaisha.includes(v) ? gaisha.filter(x => x !== v) : [...gaisha, v];
+    upd();
+  });
+});
+
+['kojitsu','genba','kojinaiyo','start','end','kyukei','crane','guard','biko'].forEach(id => {
+  document.getElementById(id).addEventListener('input', upd);
+  document.getElementById(id).addEventListener('change', upd);
+});
+
+function fmtDate(v) {
+  if (!v) return '';
+  const [y, m, d] = v.split('-');
+  return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+}
+
+function calcJikan(s, e, kyu) {
+  if (!s || !e) return null;
+  const [sh, sm] = s.split(':').map(Number);
+  const [eh, em] = e.split(':').map(Number);
+  let mins = (eh * 60 + em) - (sh * 60 + sm) - parseFloat(kyu || 0) * 60;
+  if (mins <= 0) return null;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}時間${m}分` : `${h}時間`;
+}
+
+function upd() {
+  const kojitsu = fmtDate(document.getElementById('kojitsu').value);
+  const genba   = document.getElementById('genba').value;
+  const naiyo   = document.getElementById('kojinaiyo').value;
+  const start   = document.getElementById('start').value;
+  const end     = document.getElementById('end').value;
+  const kyu     = document.getElementById('kyukei').value;
+  const crane   = document.getElementById('crane').value;
+  const guard   = document.getElementById('guard').value;
+  const biko    = document.getElementById('biko').value;
+  const jikan   = calcJikan(start, end, kyu);
+
+  const jTotal = jisha.length;
+  const gTotal = gaisha.length;
+
+  let lines = ['【現場日報】'];
+  if (kojitsu) lines.push(`工事日：${kojitsu}`);
+  if (genba)   lines.push(`現場名：${genba}`);
+  if (naiyo)   lines.push(`工事内容：${naiyo}`);
+  lines.push(`作業時間：${start} 〜 ${end}${jikan ? '（実働 ' + jikan + '）' : ''}`);
+  if (kyu !== '0') lines.push(`休憩：${kyu}h`);
+  if (crane)   lines.push(`クレーン屋：${crane}`);
+  if (guard)   lines.push(`ガードマン：${guard}`);
+  lines.push('');
+  lines.push(`出面　自社 ${jTotal}名 / 外注 ${gTotal}名（合計 ${jTotal + gTotal}名）`);
+  if (jisha.length)  lines.push(`自社：${jisha.join('・')}`);
+  if (gaisha.length) lines.push(`外注：${gaisha.join('・')}`);
+  if (biko.trim())   lines.push(`\n備考：${biko.trim()}`);
+
+  document.getElementById('preview').textContent = lines.join('\n');
+}
+
+function doCopy() {
+  const text = document.getElementById('preview').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const b = document.getElementById('copybtn');
+    b.textContent = 'コピーしました！';
+    b.classList.add('ok');
+    setTimeout(() => { b.textContent = 'コピーする'; b.classList.remove('ok'); }, 2000);
+  });
+}
+
+function doReset() {
+  document.getElementById('genba').value = '';
+  document.getElementById('kojinaiyo').value = '';
+  document.getElementById('start').value = '08:00';
+  document.getElementById('end').value = '17:00';
+  document.getElementById('kyukei').value = '1';
+  document.getElementById('crane').value = '';
+  document.getElementById('guard').value = '';
+  document.getElementById('biko').value = '';
+  jisha = []; gaisha = [];
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  const today = new Date();
+  document.getElementById('kojitsu').value = today.toISOString().split('T')[0];
+  upd();
+}
+
+upd();
+</script>
+</body>
+</html>
