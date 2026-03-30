@@ -35,8 +35,7 @@
     border: 1px solid #ddd; border-radius: 8px;
     background: #fff; color: #1a1a1a;
     font-family: inherit;
-    -webkit-appearance: none;
-    appearance: none;
+    -webkit-appearance: none; appearance: none;
   }
   select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -44,44 +43,74 @@
     background-position: right 12px center;
     padding-right: 32px;
   }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: #4a7fe0;
-  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #4a7fe0; }
   textarea { resize: vertical; min-height: 64px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .jikan-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
   .jikan-sep { font-size: 20px; color: #bbb; text-align: center; padding-bottom: 9px; }
+
   .staff-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
     gap: 7px; margin-top: 4px;
   }
   .chip {
     padding: 6px 4px; font-size: 13px;
     border: 1px solid #ddd; border-radius: 99px;
     cursor: pointer; background: #fff; color: #666;
-    text-align: center; user-select: none;
-    transition: all .12s;
+    text-align: center; user-select: none; transition: all .12s;
   }
   .chip.on {
     background: #e8f0fe; color: #1a56c4;
     border-color: #a0bcf0; font-weight: 600;
   }
+
+  /* 協力会社 チップ＋人数 */
+  .kyoryoku-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .kyoryoku-item {
+    display: flex; align-items: stretch;
+    border: 1px solid #ddd; border-radius: 99px;
+    overflow: hidden; background: #fff; transition: border-color .12s;
+  }
+  .kyoryoku-item.on { border-color: #a0bcf0; }
+  .kyoryoku-name {
+    padding: 6px 14px; font-size: 13px; color: #666;
+    cursor: pointer; user-select: none; white-space: nowrap;
+    transition: all .12s; display: flex; align-items: center;
+  }
+  .kyoryoku-item.on .kyoryoku-name {
+    background: #e8f0fe; color: #1a56c4; font-weight: 600;
+  }
+  .kyoryoku-right {
+    display: none; align-items: center;
+    border-left: 1px solid #e0e8fc; background: #f0f5fe;
+  }
+  .kyoryoku-item.on .kyoryoku-right { display: flex; }
+  .kyoryoku-count {
+    width: 36px; padding: 6px 4px; font-size: 13px; font-weight: 600;
+    border: none; border-radius: 0; text-align: center;
+    background: transparent; color: #1a56c4;
+    -moz-appearance: textfield;
+  }
+  .kyoryoku-count::-webkit-inner-spin-button,
+  .kyoryoku-count::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .kyoryoku-count:focus { outline: none; }
+  .kyoryoku-unit { font-size: 12px; color: #5a7fd4; padding-right: 10px; }
+
   .hr { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
   .preview-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; color: #aaa; text-transform: uppercase; margin-bottom: 8px; }
   .preview {
     background: #f7f7f5; border: 1px solid #e8e8e8;
     border-radius: 10px; padding: 13px 14px;
     font-size: 14px; color: #1a1a1a;
-    white-space: pre-wrap; line-height: 1.8;
-    min-height: 96px;
+    white-space: pre-wrap; line-height: 1.8; min-height: 96px;
   }
   .btn-copy {
     margin-top: 12px; width: 100%; padding: 13px;
     background: #fff; border: 1px solid #ddd;
     border-radius: 10px; font-size: 15px; font-weight: 600;
-    color: #1a1a1a; cursor: pointer;
-    transition: background .12s;
+    color: #1a1a1a; cursor: pointer; transition: background .12s;
   }
   .btn-copy:hover { background: #f5f5f0; }
   .btn-copy:active { transform: scale(0.98); }
@@ -143,9 +172,9 @@
     </select>
   </div>
 
-  <div class="row2">
+  <div class="row3">
     <div class="field">
-      <label>クレーン屋</label>
+      <label>クレーン会社</label>
       <select id="crane">
         <option value="">なし</option>
         <option>エビネクレーン</option>
@@ -155,8 +184,16 @@
       </select>
     </div>
     <div class="field">
+      <label>車両</label>
+      <select id="sharyo">
+        <option value="">なし</option>
+        <option>クレーン</option>
+        <option>ユニック</option>
+      </select>
+    </div>
+    <div class="field">
       <label>ガードマン</label>
-      <input type="text" id="guard" placeholder="会社名（任意）" />
+      <input type="text" id="guard" placeholder="人数（任意）" />
     </div>
   </div>
 
@@ -169,37 +206,30 @@
     <div class="chip" data-v="大塚">大塚</div>
     <div class="chip" data-v="福留">福留</div>
     <div class="chip" data-v="金田">金田</div>
+    <div class="chip" data-v="岩田">岩田</div>
     <div class="chip" data-v="ムル">ムル</div>
     <div class="chip" data-v="アリエフ">アリエフ</div>
     <div class="chip" data-v="キー">キー</div>
-    <div class="chip" data-v="フィー">フィー</div>
+    <div class="chip" data-v="フィ">フィ</div>
     <div class="chip" data-v="サン">サン</div>
-    <div class="chip" data-v="岩田">岩田</div>
   </div>
 
-  <div class="sec" style="margin-top:1rem">出面（自社以外）</div>
-  <div class="staff-grid" id="gaisha-grid">
-    <div class="chip" data-v="原西A">原西A</div>
-    <div class="chip" data-v="原西B">原西B</div>
-    <div class="chip" data-v="西陽機工A">西陽機工A</div>
-    <div class="chip" data-v="西陽機工B">西陽機工B</div>
-    <div class="chip" data-v="西陽機工C">西陽機工C</div>
-    <div class="chip" data-v="立川">立川</div>
-    <div class="chip" data-v="蒼機工A">蒼機工A</div>
-    <div class="chip" data-v="蒼機工B">蒼機工B</div>
-    <div class="chip" data-v="上坊">上坊</div>
-    <div class="chip" data-v="西田A">西田A</div>
-    <div class="chip" data-v="西田B">西田B</div>
-    <div class="chip" data-v="東和">東和</div>
-    <div class="chip" data-v="杉本機工">杉本機工</div>
-    <div class="chip" data-v="ワーキング">ワーキング</div>
-    <div class="chip" data-v="川越重量">川越重量</div>
-    <div class="chip" data-v="ash">ash</div>
-    <div class="chip" data-v="西岡">西岡</div>
-    <div class="chip" data-v="篠崎">篠崎</div>
-    <div class="chip" data-v="フジ興業">フジ興業</div>
-    <div class="chip" data-v="梓総業">梓総業</div>
-    <div class="chip" data-v="アローズコア">アローズコア</div>
+  <div class="sec" style="margin-top:1rem">出面（協力会社）　※タップして人数を入力</div>
+  <div class="kyoryoku-grid" id="kyoryoku-grid">
+    <div class="kyoryoku-item" data-v="原西"><span class="kyoryoku-name">原西</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="西陽機工"><span class="kyoryoku-name">西陽機工</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="立川"><span class="kyoryoku-name">立川</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="蒼機工"><span class="kyoryoku-name">蒼機工</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="東和"><span class="kyoryoku-name">東和</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="杉本機工"><span class="kyoryoku-name">杉本機工</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="ワーキング"><span class="kyoryoku-name">ワーキング</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="川越重量"><span class="kyoryoku-name">川越重量</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="上坊"><span class="kyoryoku-name">上坊</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="西岡"><span class="kyoryoku-name">西岡</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="篠崎"><span class="kyoryoku-name">篠崎</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="フジ興業"><span class="kyoryoku-name">フジ興業</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="梓総業"><span class="kyoryoku-name">梓総業</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+    <div class="kyoryoku-item" data-v="アローズコア"><span class="kyoryoku-name">アローズコア</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
   </div>
 
   <div class="field" style="margin-top:12px">
@@ -218,7 +248,7 @@
 const today = new Date();
 document.getElementById('kojitsu').value = today.toISOString().split('T')[0];
 
-let jisha = [], gaisha = [];
+let jisha = [];
 
 document.querySelectorAll('#jisha-grid .chip').forEach(c => {
   c.addEventListener('click', () => {
@@ -228,16 +258,16 @@ document.querySelectorAll('#jisha-grid .chip').forEach(c => {
     upd();
   });
 });
-document.querySelectorAll('#gaisha-grid .chip').forEach(c => {
-  c.addEventListener('click', () => {
-    c.classList.toggle('on');
-    const v = c.dataset.v;
-    gaisha = gaisha.includes(v) ? gaisha.filter(x => x !== v) : [...gaisha, v];
+
+document.querySelectorAll('.kyoryoku-item').forEach(item => {
+  item.querySelector('.kyoryoku-name').addEventListener('click', () => {
+    item.classList.toggle('on');
     upd();
   });
+  item.querySelector('.kyoryoku-count').addEventListener('input', upd);
 });
 
-['kojitsu','genba','kojinaiyo','start','end','kyukei','crane','guard','biko'].forEach(id => {
+['kojitsu','genba','kojinaiyo','start','end','kyukei','crane','sharyo','guard','biko'].forEach(id => {
   document.getElementById(id).addEventListener('input', upd);
   document.getElementById(id).addEventListener('change', upd);
 });
@@ -267,12 +297,21 @@ function upd() {
   const end     = document.getElementById('end').value;
   const kyu     = document.getElementById('kyukei').value;
   const crane   = document.getElementById('crane').value;
+  const sharyo  = document.getElementById('sharyo').value;
   const guard   = document.getElementById('guard').value;
   const biko    = document.getElementById('biko').value;
   const jikan   = calcJikan(start, end, kyu);
 
+  const kyoryokuItems = [];
+  let gTotal = 0;
+  document.querySelectorAll('.kyoryoku-item.on').forEach(item => {
+    const name = item.dataset.v;
+    const count = parseInt(item.querySelector('.kyoryoku-count').value) || 1;
+    kyoryokuItems.push({ name, count });
+    gTotal += count;
+  });
+
   const jTotal = jisha.length;
-  const gTotal = gaisha.length;
 
   let lines = ['【現場日報】'];
   if (kojitsu) lines.push(`工事日：${kojitsu}`);
@@ -280,13 +319,17 @@ function upd() {
   if (naiyo)   lines.push(`工事内容：${naiyo}`);
   lines.push(`作業時間：${start} 〜 ${end}${jikan ? '（実働 ' + jikan + '）' : ''}`);
   if (kyu !== '0') lines.push(`休憩：${kyu}h`);
-  if (crane)   lines.push(`クレーン屋：${crane}`);
+  if (crane)   lines.push(`クレーン会社：${crane}`);
+  if (sharyo)  lines.push(`車両：${sharyo}`);
   if (guard)   lines.push(`ガードマン：${guard}`);
   lines.push('');
-  lines.push(`出面　自社 ${jTotal}名 / 外注 ${gTotal}名（合計 ${jTotal + gTotal}名）`);
-  if (jisha.length)  lines.push(`自社：${jisha.join('・')}`);
-  if (gaisha.length) lines.push(`外注：${gaisha.join('・')}`);
-  if (biko.trim())   lines.push(`\n備考：${biko.trim()}`);
+  lines.push(`出面　自社 ${jTotal}名 / 協力会社 ${gTotal}名（合計 ${jTotal + gTotal}名）`);
+  if (jisha.length) lines.push(`自社：${jisha.join('・')}`);
+  if (kyoryokuItems.length) {
+    const str = kyoryokuItems.map(x => `${x.name} ${x.count}名`).join('・');
+    lines.push(`協力会社：${str}`);
+  }
+  if (biko.trim()) lines.push(`\n備考：${biko.trim()}`);
 
   document.getElementById('preview').textContent = lines.join('\n');
 }
@@ -308,12 +351,17 @@ function doReset() {
   document.getElementById('end').value = '17:00';
   document.getElementById('kyukei').value = '1';
   document.getElementById('crane').value = '';
+  document.getElementById('sharyo').value = '';
   document.getElementById('guard').value = '';
   document.getElementById('biko').value = '';
-  jisha = []; gaisha = [];
+  jisha = [];
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-  const today = new Date();
-  document.getElementById('kojitsu').value = today.toISOString().split('T')[0];
+  document.querySelectorAll('.kyoryoku-item').forEach(item => {
+    item.classList.remove('on');
+    item.querySelector('.kyoryoku-count').value = 1;
+  });
+  const t = new Date();
+  document.getElementById('kojitsu').value = t.toISOString().split('T')[0];
   upd();
 }
 
