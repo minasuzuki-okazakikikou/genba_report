@@ -282,7 +282,10 @@ function calcJikan(s, e, kyu) {
   if (!s || !e) return null;
   const [sh, sm] = s.split(':').map(Number);
   const [eh, em] = e.split(':').map(Number);
-  let mins = (eh * 60 + em) - (sh * 60 + sm) - parseFloat(kyu || 0) * 60;
+  let startMins = sh * 60 + sm;
+  let endMins = eh * 60 + em;
+  if (endMins <= startMins) endMins += 24 * 60;
+  let mins = endMins - startMins - parseFloat(kyu || 0) * 60;
   if (mins <= 0) return null;
   const h = Math.floor(mins / 60);
   const m = mins % 60;
