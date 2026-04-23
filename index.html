@@ -136,7 +136,7 @@
       <input type="date" id="kojitsu" />
     </div>
     <div class="field">
-      <label>現場名</label>
+      <label>現場名 <span style="color:#e53935;font-size:12px">※必須</span></label>
       <input type="text" id="genba" placeholder="現場名を入力" />
     </div>
   </div>
@@ -147,7 +147,7 @@
   </div>
 
   <div class="field">
-    <label>作業時間</label>
+    <label>作業時間 <span style="color:#e53935;font-size:12px">※必須</span></label>
     <div class="jikan-row">
       <div>
         <label style="font-size:12px;margin-bottom:3px">開始</label>
@@ -162,11 +162,13 @@
   </div>
 
   <div class="field">
-    <label>休憩</label>
+    <label>休憩 <span style="color:#e53935;font-size:12px">※必須</span></label>
     <select id="kyukei">
+      <option value="" disabled selected>-- 選択してください --</option>
       <option value="0">なし</option>
+      <option value="0.25">0.25h</option>
       <option value="0.5">0.5h</option>
-      <option value="1" selected>1h</option>
+      <option value="1">1h</option>
       <option value="1.5">1.5h</option>
       <option value="2">2h</option>
     </select>
@@ -338,6 +340,14 @@ function upd() {
 }
 
 function doCopy() {
+  const genba = document.getElementById('genba').value.trim();
+  const start = document.getElementById('start').value;
+  const end   = document.getElementById('end').value;
+  const kyu   = document.getElementById('kyukei').value;
+  if (!genba) { alert('現場名を入力してください。'); return; }
+  if (!start) { alert('作業開始時間を入力してください。'); return; }
+  if (!end)   { alert('作業終了時間を入力してください。'); return; }
+  if (!kyu)   { alert('休憩を選択してください。'); return; }
   const text = document.getElementById('preview').textContent;
   navigator.clipboard.writeText(text).then(() => {
     const b = document.getElementById('copybtn');
@@ -352,7 +362,7 @@ function doReset() {
   document.getElementById('kojinaiyo').value = '';
   document.getElementById('start').value = '08:00';
   document.getElementById('end').value = '17:00';
-  document.getElementById('kyukei').value = '1';
+  document.getElementById('kyukei').value = '';
   document.getElementById('crane').value = '';
   document.getElementById('sharyo').value = '';
   document.getElementById('guard').value = '';
