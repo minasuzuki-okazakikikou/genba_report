@@ -121,6 +121,37 @@
     font-size: 13px; color: #aaa; cursor: pointer;
   }
   .btn-reset:hover { color: #888; }
+
+  /* ガードマン専用 */
+  #guard-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  #guard-grid .kyoryoku-item {
+    display: flex; align-items: stretch;
+    border: 1px solid #ddd; border-radius: 99px;
+    overflow: hidden; background: #fff; transition: border-color .12s;
+    cursor: pointer;
+  }
+  #guard-grid .kyoryoku-item.on { border-color: #a0bcf0; }
+  #guard-grid .kyoryoku-name {
+    padding: 6px 14px; font-size: 13px; color: #666;
+    user-select: none; white-space: nowrap;
+    display: flex; align-items: center; transition: all .12s;
+  }
+  #guard-grid .kyoryoku-item.on .kyoryoku-name {
+    background: #e8f0fe; color: #1a56c4; font-weight: 600;
+  }
+  #guard-grid .kyoryoku-right {
+    display: none; align-items: center;
+    border-left: 1px solid #e0e8fc; background: #f0f5fe;
+  }
+  #guard-grid .kyoryoku-item.on .kyoryoku-right { display: flex; }
+  #guard-grid .kyoryoku-count {
+    width: 36px; padding: 6px 4px; font-size: 13px; font-weight: 600;
+    border: none; text-align: center; background: transparent; color: #1a56c4;
+    -moz-appearance: textfield;
+  }
+  #guard-grid .kyoryoku-count::-webkit-inner-spin-button,
+  #guard-grid .kyoryoku-count::-webkit-outer-spin-button { -webkit-appearance: none; }
+  #guard-grid .kyoryoku-unit { font-size: 12px; color: #5a7fd4; padding-right: 10px; }
 </style>
 </head>
 <body>
@@ -139,6 +170,15 @@
       <label>現場名 <span style="color:#e53935;font-size:12px">※必須</span></label>
       <input type="text" id="genba" placeholder="現場名を入力" />
     </div>
+  </div>
+
+  <div class="field">
+    <label>元請け</label>
+    <div style="display:flex;gap:4px;margin-bottom:8px">
+      <div class="chip" id="chip-bilcon" onclick="selectMotouke('ビルコン')" style="padding:4px 10px;font-size:13px">ビルコン</div>
+      <div class="chip" id="chip-chuden" onclick="selectMotouke('中電工')" style="padding:4px 10px;font-size:13px">中電工</div>
+    </div>
+    <input type="text" id="motouke" placeholder="フリー入力（その他の場合）" />
   </div>
 
   <div class="field">
@@ -174,7 +214,7 @@
     </select>
   </div>
 
-  <div class="row3">
+  <div class="row2">
     <div class="field">
       <label>クレーン会社</label>
       <select id="crane">
@@ -193,9 +233,13 @@
         <option>ユニック</option>
       </select>
     </div>
-    <div class="field">
-      <label>ガードマン</label>
-      <input type="text" id="guard" placeholder="人数（任意）" />
+  </div>
+
+  <div class="field">
+    <label>ガードマン</label>
+    <div class="kyoryoku-grid" id="guard-grid">
+      <div class="kyoryoku-item" data-v="相互システム"><span class="kyoryoku-name">相互システム</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
+      <div class="kyoryoku-item" data-v="その他"><span class="kyoryoku-name">その他</span><div class="kyoryoku-right"><input class="kyoryoku-count" type="number" min="1" max="99" value="1" /><span class="kyoryoku-unit">名</span></div></div>
     </div>
   </div>
 
@@ -252,6 +296,25 @@ document.getElementById('kojitsu').value = today.toISOString().split('T')[0];
 
 let jisha = [];
 
+document.getElementById('motouke').addEventListener('input', () => {
+  const val = document.getElementById('motouke').value;
+  document.getElementById('chip-bilcon').classList.toggle('on', val === 'ビルコン');
+  document.getElementById('chip-chuden').classList.toggle('on', val === '中電工');
+  upd();
+});
+
+document.querySelectorAll('#guard-grid .kyoryoku-item').forEach(item => {
+  item.querySelector('.kyoryoku-name').addEventListener('click', (e) => {
+    e.stopPropagation();
+    item.classList.toggle('on');
+    upd();
+  });
+  item.querySelector('.kyoryoku-count').addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+  item.querySelector('.kyoryoku-count').addEventListener('input', upd);
+});
+
 document.querySelectorAll('#jisha-grid .chip').forEach(c => {
   c.addEventListener('click', () => {
     c.classList.toggle('on');
@@ -261,15 +324,19 @@ document.querySelectorAll('#jisha-grid .chip').forEach(c => {
   });
 });
 
-document.querySelectorAll('.kyoryoku-item').forEach(item => {
-  item.querySelector('.kyoryoku-name').addEventListener('click', () => {
+document.querySelectorAll('#kyoryoku-grid .kyoryoku-item').forEach(item => {
+  item.querySelector('.kyoryoku-name').addEventListener('click', (e) => {
+    e.stopPropagation();
     item.classList.toggle('on');
     upd();
+  });
+  item.querySelector('.kyoryoku-count').addEventListener('click', (e) => {
+    e.stopPropagation();
   });
   item.querySelector('.kyoryoku-count').addEventListener('input', upd);
 });
 
-['kojitsu','genba','kojinaiyo','start','end','kyukei','crane','sharyo','guard','biko'].forEach(id => {
+['kojitsu','genba','kojinaiyo','start','end','kyukei','crane','sharyo','biko'].forEach(id => {
   document.getElementById(id).addEventListener('input', upd);
   document.getElementById(id).addEventListener('change', upd);
 });
@@ -294,16 +361,40 @@ function calcJikan(s, e, kyu) {
   return m > 0 ? `${h}時間${m}分` : `${h}時間`;
 }
 
+function selectMotouke(val) {
+  const input = document.getElementById('motouke');
+  // 同じ値をクリックしたら解除
+  if (input.value === val) {
+    input.value = '';
+    document.getElementById('chip-bilcon').classList.remove('on');
+    document.getElementById('chip-chuden').classList.remove('on');
+  } else {
+    input.value = val;
+    document.getElementById('chip-bilcon').classList.toggle('on', val === 'ビルコン');
+    document.getElementById('chip-chuden').classList.toggle('on', val === '中電工');
+  }
+  upd();
+}
+
 function upd() {
   const kojitsu = fmtDate(document.getElementById('kojitsu').value);
   const genba   = document.getElementById('genba').value;
+  const motouke = document.getElementById('motouke').value;
   const naiyo   = document.getElementById('kojinaiyo').value;
   const start   = document.getElementById('start').value;
   const end     = document.getElementById('end').value;
   const kyu     = document.getElementById('kyukei').value;
   const crane   = document.getElementById('crane').value;
   const sharyo  = document.getElementById('sharyo').value;
-  const guard   = document.getElementById('guard').value;
+  // ガードマン集計
+  const guardItems = [];
+  let guardTotal = 0;
+  document.querySelectorAll('#guard-grid .kyoryoku-item.on').forEach(item => {
+    const name = item.dataset.v;
+    const count = parseInt(item.querySelector('.kyoryoku-count').value) || 1;
+    guardItems.push({ name, count });
+    guardTotal += count;
+  });
   const biko    = document.getElementById('biko').value;
   const jikan   = calcJikan(start, end, kyu);
 
@@ -321,12 +412,17 @@ function upd() {
   let lines = ['【現場日報】'];
   if (kojitsu) lines.push(`工事日：${kojitsu}`);
   if (genba)   lines.push(`現場名：${genba}`);
+  if (motouke) lines.push(`元請け：${motouke}`);
   if (naiyo)   lines.push(`工事内容：${naiyo}`);
   lines.push(`作業時間：${start} 〜 ${end}${jikan ? '（実働 ' + jikan + '）' : ''}`);
-  if (kyu !== '0') lines.push(`休憩：${kyu}h`);
+  if (kyu === '0') lines.push('休憩：なし');
+  else if (kyu) lines.push(`休憩：${kyu}h`);
   if (crane)   lines.push(`クレーン会社：${crane}`);
   if (sharyo)  lines.push(`車両：${sharyo}`);
-  if (guard)   lines.push(`ガードマン：${guard}`);
+  if (guardItems.length) {
+    const guardStr = guardItems.map(x => `${x.name} ${x.count}名`).join('・');
+    lines.push(`ガードマン：${guardStr}（計${guardTotal}名）`);
+  }
   lines.push('');
   lines.push(`出面　自社 ${jTotal}名 / 協力会社 ${gTotal}名（合計 ${jTotal + gTotal}名）`);
   if (jisha.length) lines.push(`自社：${jisha.join('・')}`);
@@ -334,7 +430,8 @@ function upd() {
     const str = kyoryokuItems.map(x => `${x.name} ${x.count}名`).join('・');
     lines.push(`協力会社：${str}`);
   }
-  if (biko.trim()) lines.push(`\n備考：${biko.trim()}`);
+  const bikoClean = biko.trim().replace(/[\r\n]+/g, ' ');
+  if (bikoClean) lines.push(`\n備考：${bikoClean}`);
 
   document.getElementById('preview').textContent = lines.join('\n');
 }
@@ -359,13 +456,24 @@ function doCopy() {
 
 function doReset() {
   document.getElementById('genba').value = '';
+  document.getElementById('motouke').value = '';
   document.getElementById('kojinaiyo').value = '';
   document.getElementById('start').value = '08:00';
   document.getElementById('end').value = '17:00';
   document.getElementById('kyukei').value = '';
   document.getElementById('crane').value = '';
   document.getElementById('sharyo').value = '';
-  document.getElementById('guard').value = '';
+  document.getElementById('motouke').addEventListener('input', () => {
+  const val = document.getElementById('motouke').value;
+  document.getElementById('chip-bilcon').classList.toggle('on', val === 'ビルコン');
+  document.getElementById('chip-chuden').classList.toggle('on', val === '中電工');
+  upd();
+});
+
+document.querySelectorAll('#guard-grid .kyoryoku-item').forEach(item => {
+    item.classList.remove('on');
+    item.querySelector('.kyoryoku-count').value = 1;
+  });
   document.getElementById('biko').value = '';
   jisha = [];
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
